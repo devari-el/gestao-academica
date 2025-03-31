@@ -1,174 +1,166 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
-struct Curso{	
-	int id;
-	char nome[30]; //Nome do curso
-	char nivel[8]; //Tecnico ou Superior
-	int duracao; //Duracao em anos
-	char grade_disciplinas[3][30];
+struct Disciplina {
+    char nome[10];    
+    float notas[3];
+    int carga_horaria; 
+    int frequencia;
 };
 
-struct Curso cursos[2] ={
-	{1, "ADS", "Superior", 3, {"IHC", "ALP", "LHW"}},
-	{2, "AGRO", "Tecnico", 2, {"ADM", "PT_BR", "CME"}}
+struct Curso {    
+    int id;
+    char nome[30];
+    char nivel[8]; 
+    int duracao; 
+    struct Disciplina grade_curricular[3];
 };
 
-struct Disciplina{	
-	char nome [30]; //Nome da disciplina
-	int carga_horario; //Em horas
+struct Curso cursos[2] = {
+    {1, "ADS", "Superior", 3, {
+        {"IHC", {0, 0, 0}, 80, 0},
+        {"ALP", {0, 0, 0}, 80, 0}, 
+        {"LHW", {0, 0, 0}, 40, 0}
+    }},
+    {2, "AGRO", "Tecnico", 2, {
+        {"ADM", {0, 0, 0}, 60, 0},
+        {"PT_BR", {0, 0, 0}, 60, 0}, 
+        {"CME", {0, 0, 0}, 30, 0}
+    }}
 };
 
-struct Aluno{
-	int id;
-	char nome [50]; //Nome aluno
-	char curso[30]; //Curso em que está matriculado
-	char disciplinas [3][30]; //Disciplinas que está cursando
+struct Aluno {
+    int id;
+    char nome[50];
+    struct Curso *curso;
 };
 
-struct Aluno alunos[10];
+struct Aluno alunos[10] = {0};
 
-struct disciplinasMatriculadas{	
-	char nome[30];	
-};
+#define NUM_ALUNOS (sizeof(alunos) / sizeof(alunos[0]))
+#define NUM_CURSOS (sizeof(cursos) / sizeof(cursos[0]))
+#define NUM_DISCIPLINAS (sizeof(cursos[0].grade_curricular) / sizeof(cursos[0].grade_curricular[0]))
+#define NUM_NOTAS (sizeof(cursos[0].grade_curricular[0].notas) / sizeof(cursos[0].grade_curricular[0].notas[0]))
 
-void exibirAlunos(){
-
-	int numAlunos = sizeof(alunos) / sizeof(alunos[0]);
-
-	if(alunos[0].id != 1){
-
-		printf("\nNao ha alunos matriculados!\n");
-
-	}else{
-
-		for(int i = 0; i < numAlunos; i++){
-
-			if(alunos[i].id == 0){
-				break;
-			}
-			printf("\n\nID: %d\nNOME: %s\nCURSO: %s", 
-			alunos[i].id,
-			alunos[i].nome,
-			alunos[i].curso);
-			printf("\nDISCIPLINAS:\n");
-			for(int l = 0; l < 3; l++){
-				printf("\t\t%s\n", alunos[i].disciplinas[l]);
-			}
-		}
-	}
+void exibirCursos() {
+    printf("\nCursos disponiveis:\n");
+    for (int i = 0; i < NUM_CURSOS; i++) {
+        printf("[%d] %s (%s)\n", cursos[i].id, cursos[i].nome, cursos[i].nivel);
+    }
 }
 
-void exibirCursos(){
-	printf("\n%s", cursos[0].nome);
-	printf("\n%s", cursos[1].nome);
-	printf("\n");
+void exibirAlunos() {
+    int encontrou = 0;
+    printf("\nLista de Alunos:\n");
+    for (int i = 0; i < NUM_ALUNOS; i++) {
+        if (alunos[i].id != 0) {
+            encontrou = 1;
+            printf("\nID: %d\nNOME: %s\nCURSO: %s\nDISCIPLINAS:\n", alunos[i].id, alunos[i].nome, alunos[i].curso->nome);
+            for (int j = 0; j < NUM_DISCIPLINAS; j++) {
+                printf("\t- %s\n", alunos[i].curso->grade_curricular[j].nome);
+            }
+        }
+    }
+    if (!encontrou) {
+        printf("\nNao ha alunos matriculados!\n");
+    }
 }
 
-void cadAluno(){
-	
-	int i = 0;
-	int id_curso;
-	
-	for (i = 0; i < 10; i++){
-		
-		if(strlen(alunos[i].nome) == 0){
-			alunos[i].id = i + 1;
-			break;
-		}
-		
-	}
-	
-	printf("\nDigite o nome do aluno: ");
-	getchar();
-	fgets(alunos[i].nome, 50, stdin);
-	alunos[i].nome[strcspn(alunos[i].nome, "\n")] = 0;
+void cadAluno() {
+    int i, id_curso;
+    for (i = 0; i < NUM_ALUNOS; i++) {
+        if (alunos[i].id == 0) {
+            alunos[i].id = i + 1;
+            break;
+        }
+    }
+    if (i == NUM_ALUNOS) {
+        printf("\nLimite de alunos atingido!\n");
+        return;
+    }
 
-	int numCursos = sizeof(cursos)/ sizeof(cursos[0]);
+    printf("\nDigite o nome do aluno: ");
+    getchar();
+    fgets(alunos[i].nome, 50, stdin);
+    alunos[i].nome[strcspn(alunos[i].nome, "\n")] = 0;
 
-	printf("\nDigite para qual curso deseja cadastrar o aluno:\n\n");
+    exibirCursos();
+    printf("\nDigite o ID do curso para matricula: ");
+    scanf("%d", &id_curso);
 
-	for (int j = 0; j < numCursos; j++){ //for p/ printar todos os cursos disponíveis
-
-		printf("[%d]%s\n", cursos[j].id, cursos[j].nome);
-
-	}
-	scanf("%d", &id_curso);
-	id_curso -= 1;
-
-	strcpy(alunos[i].curso, cursos[id_curso].nome);
-
-	for(int k = 0; k < 3; k++){ //for p/ definir disciplinas a partir do curso escolhido
-
-		strcpy(alunos[i].disciplinas[k], cursos[id_curso].grade_disciplinas[k]);
-
-	}
-
-	printf("\nAluno cadastrado com sucesso!\n\n");
-	printf("ID: %d\n", alunos[i].id);
-	printf("NOME: %s\n", alunos[i].nome);
-	printf("CURSO: %s\n", alunos[i].curso);
-	printf("DISCIPLINAS:\n");
-		for(int l = 0; l < 3; l++){
-			printf("\t\t%s\n", alunos[i].disciplinas[l]);
-		}
+    for (int j = 0; j < NUM_CURSOS; j++) {
+        if (cursos[j].id == id_curso) {
+            alunos[i].curso = &cursos[j];
+            printf("\nAluno cadastrado com sucesso!\n");
+            return;
+        }
+    }
+    printf("\nCurso nao encontrado! Cadastro cancelado.\n");
+    alunos[i].id = 0;
 }
 
-void iniciarArrayAlunos(){
-	for(int i = 0; i < 10; i++){
-		alunos[i].id = 0;
-		strcpy(alunos[i].curso, "");
-		strcpy(alunos[i].nome, "");
-	}
+void buscarIdAluno(int aluno_buscado, bool *encontrado){
+    *encontrado = false;
+    for (int i = 0; i < NUM_ALUNOS; i++){
+        if(aluno_buscado == alunos[i].id){
+            printf("ID: %d\nNOME: %s\nCURSO: %s\nDISCIPLINAS:\n", alunos[i].id, alunos[i].nome, alunos[i].curso->nome);
+            for (int j = 0; j < NUM_DISCIPLINAS; j++){
+                printf("\t-%s\n", alunos[i].curso->grade_curricular[j].nome);
+            }
+            *encontrado = true;
+            return;
+        }
+    }
+    printf("\nAluno nao encontrado!\n");
 }
 
-void menuPrincipal(){
-	
-	int option = 0;
-	
-	do{
-		printf("\n========== GESTAO ACADEMICA ==========\n\n");
-		printf("[1] CADASTRAR ALUNO\n");
-		printf("[2] EXIBIR CURSOS\n");
-		printf("[3] LANCAR NOTA OU FREQ.\n");
-		printf("[4] RELATORIO ALUNO\n");
-		printf("[5] SAIR\n");
-		printf("\n======================================\n");
-		printf("Digite a opcao desejada... ");
-		scanf("%d", &option);
-		
-		switch(option){
-			case 1:
-				cadAluno();
-				break;
+void lancarNotaFrequencia() {
+    int id_aluno;
+    bool aluno_encontrado = false;
 
-			case 2:
-				exibirCursos();
-				break;
+    exibirAlunos();
 
-			case 3:
-				printf("lancando");
-				break;
+    printf("\nDigite o ID do aluno que deseja lancar a Nota/Freq: ");
+    scanf("%d", &id_aluno);
 
-			case 4:
-				printf("relatorio");
-				break;
-				
-			case 5:
-				printf("\nObrigado por utilizar este sistema :)\n");
-				break;
+    buscarIdAluno(id_aluno, &aluno_encontrado);
+    if (!aluno_encontrado) return;
 
-			default:
-				printf("\nOpcao invalida!\n");
-		}
-	}while(option != 5);
+    printf("Escolha a disciplina:\n");
+    for (int i = 0; i < NUM_DISCIPLINAS; i++) {
+        printf("[%d] %s\n", i, alunos[id_aluno - 1].curso->grade_curricular[i].nome);
+    }
+    int opcaoEscolhida;
+    scanf("%d", &opcaoEscolhida);
+    
+    printf("Lancar:\n[1] NOTA\n[2] FREQUENCIA\n");
+    int escolha;
+    scanf("%d", &escolha);
+
+    if (escolha == 1) {
+        for (int i = 0; i < NUM_NOTAS; i++) {
+            printf("Nota %d: ", i + 1);
+            scanf("%f", &alunos[id_aluno - 1].curso->grade_curricular[opcaoEscolhida].notas[i]);
+        }
+    } else if (escolha == 2) {
+        printf("Frequencia em horas: ");
+        scanf("%d", &alunos[id_aluno - 1].curso->grade_curricular[opcaoEscolhida].frequencia);
+    }
 }
 
-int main (void){
+void menuPrincipal() {
+    int option;
+    do {
+        printf("\n[1] Cadastrar Aluno\n[2] Exibir Cursos\n[3] Lancar Nota ou Frequencia\n[4] Sair\nOpcao: ");
+        scanf("%d", &option);
+        if (option == 1) cadAluno();
+        else if (option == 2) exibirCursos();
+        else if (option == 3) lancarNotaFrequencia();
+    } while(option != 4);
+}
 
-	iniciarArrayAlunos();
-
-	menuPrincipal();
-	
-	return 0;
+int main() {
+    menuPrincipal();
+    return 0;
 }
