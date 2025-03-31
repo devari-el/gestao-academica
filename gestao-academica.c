@@ -104,10 +104,7 @@ void buscarIdAluno(int aluno_buscado, bool *encontrado){
     *encontrado = false;
     for (int i = 0; i < NUM_ALUNOS; i++){
         if(aluno_buscado == alunos[i].id){
-            printf("ID: %d\nNOME: %s\nCURSO: %s\nDISCIPLINAS:\n", alunos[i].id, alunos[i].nome, alunos[i].curso->nome);
-            for (int j = 0; j < NUM_DISCIPLINAS; j++){
-                printf("\t-%s\n", alunos[i].curso->grade_curricular[j].nome);
-            }
+            printf("\nAluno selecionado: %s\n\n", alunos[i].nome);
             *encontrado = true;
             return;
         }
@@ -132,9 +129,10 @@ void lancarNotaFrequencia() {
         printf("[%d] %s\n", i, alunos[id_aluno - 1].curso->grade_curricular[i].nome);
     }
     int opcaoEscolhida;
+	printf("Opcao:");
     scanf("%d", &opcaoEscolhida);
     
-    printf("Lancar:\n[1] NOTA\n[2] FREQUENCIA\n");
+    printf("\nLancar:\n[1] NOTA\n[2] FREQUENCIA\nOpcao:");
     int escolha;
     scanf("%d", &escolha);
 
@@ -149,18 +147,75 @@ void lancarNotaFrequencia() {
     }
 }
 
+void relatorioAluno(){
+    int id_aluno;
+    bool aluno_encontrado = false;
+
+    exibirAlunos();
+
+    printf("\nDigite o ID do aluno que deseja obter o relatorio: ");
+    scanf("%d", &id_aluno);
+
+    buscarIdAluno(id_aluno, &aluno_encontrado);
+    if (!aluno_encontrado) return;	
+
+	id_aluno -= 1;
+
+	printf("\nID: %d\nNome: %s\nCurso: %s\nNivel: %s\nDuracao: %d anos\n\nRelatorio Geral:",
+	alunos[id_aluno].id,
+	alunos[id_aluno].nome,
+	alunos[id_aluno].curso->nome,
+	alunos[id_aluno].curso->nivel,
+	alunos[id_aluno].curso->duracao);
+
+	float media = 0;
+	float percentualFrequencia = 0;
+
+	for(int i = 0; i < NUM_DISCIPLINAS; i++){
+		media = 0;
+		printf("\n\n%s:", alunos[id_aluno].curso->grade_curricular[i].nome);
+		for(int j = 0; j < NUM_NOTAS; j++){
+			printf("\n\tNota %d: %.2f", i + 1, alunos[id_aluno].curso->grade_curricular[i].notas[j]);
+			media += alunos[id_aluno].curso->grade_curricular[i].notas[j];
+		}
+		printf("\n\tMedia: %.2f", media/NUM_NOTAS);
+		printf("\n\nCarga horaria total da Disciplina: %d horas", 
+		alunos[id_aluno].curso->grade_curricular[i].carga_horaria);
+		printf("\nCarga horario cursada pelo aluno: %d horas",
+		alunos[id_aluno].curso->grade_curricular[i].frequencia);
+		percentualFrequencia = (double)alunos[id_aluno].curso->grade_curricular[i].frequencia
+		/(double)alunos[id_aluno].curso->grade_curricular[i].carga_horaria
+		*100;
+		printf("\nPercentual frequencia: %.2f%%", percentualFrequencia);
+
+		if(media < 6 || percentualFrequencia < 75){
+			printf("\nStatus: REPROVADO");
+		}else{
+			printf("\nStatus: APROVADO");
+		}
+	}
+	printf("\n");
+}
+
 void menuPrincipal() {
     int option;
     do {
-        printf("\n[1] Cadastrar Aluno\n[2] Exibir Cursos\n[3] Lancar Nota ou Frequencia\n[4] Sair\nOpcao: ");
+        printf("\n[1] Cadastrar Aluno\n[2] Exibir Cursos\n[3] Lancar Nota ou Frequencia\n[4] Relatorio Aluno\n[5] Sair\nOpcao: ");
         scanf("%d", &option);
         if (option == 1) cadAluno();
         else if (option == 2) exibirCursos();
         else if (option == 3) lancarNotaFrequencia();
-    } while(option != 4);
+		else if (option == 4) relatorioAluno();
+		else if (option < 1 || option > 5){
+			printf("\nDigite uma opcao valida!\n");
+		}
+    } while(option != 5);
+
+	printf("\nObrigado por utilizar o sistema!\n");
 }
 
 int main() {
+
     menuPrincipal();
     return 0;
 }
