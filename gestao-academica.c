@@ -178,7 +178,8 @@ void relatorioAluno(){
 			printf("\n\tNota %d: %.2f", i + 1, alunos[id_aluno].curso->grade_curricular[i].notas[j]);
 			media += alunos[id_aluno].curso->grade_curricular[i].notas[j];
 		}
-		printf("\n\tMedia: %.2f", media/NUM_NOTAS);
+	    media/= NUM_NOTAS;
+		printf("\n\tMedia: %.2f", media);
 		printf("\n\nCarga horaria total da Disciplina: %d horas", 
 		alunos[id_aluno].curso->grade_curricular[i].carga_horaria);
 		printf("\nCarga horario cursada pelo aluno: %d horas",
